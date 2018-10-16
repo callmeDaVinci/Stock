@@ -17,7 +17,7 @@ namespace Stock
         {
             InitializeComponent();
         }
-
+          
         private void dgvProducts_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 
@@ -25,32 +25,52 @@ namespace Stock
 
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            SqlConnection con = new SqlConnection("Data Source=LAPTOP-2B38MO48\\SQLEXPRESS;Initial Catalog=StockManagement;Integrated Security=True");
+            DialogResult dialogResult = MessageBox.Show("Are you sure want to add/update?", "Message",MessageBoxButtons.YesNo,MessageBoxIcon.Question);
 
-            //Insert Logic
-            con.Open();
-
-            var sqlQuery = "";
-
-            if (IfProductsExists(con, txtProductCode.Text))
+            if (dialogResult == DialogResult.Yes)
             {
-                sqlQuery = @"UPDATE [dbo].[tbl_products] SET [ProductName] = '" + txtProductName.Text + "',[ProductStatus] = '" + cmbStatus.SelectedIndex + "' WHERE [ProductCode] = '" + txtProductCode.Text + "'";
-            }
-            else
-            {
-                sqlQuery = @"INSERT INTO [dbo].[tbl_products]([ProductCode],[ProductName],[ProductStatus])VALUES 
+                if (Validation())
+                {
+
+                    SqlConnection con = new SqlConnection("Data Source=LAPTOP-2B38MO48\\SQLEXPRESS;Initial Catalog=StockManagement;Integrated Security=True");
+
+                    //Insert Logic
+                    con.Open();
+
+
+                    var sqlQuery = "";
+                    try
+                    {
+                        if (IfProductsExists(con, txtProductCode.Text))
+                        {
+
+                            sqlQuery = @"UPDATE [dbo].[tbl_products] SET [ProductName] = '" + txtProductName.Text + "',[ProductStatus] = '" + cmbStatus.SelectedIndex + "' WHERE [ProductCode] = '" + txtProductCode.Text + "'";
+
+                            MessageBox.Show("Product succefully updated.");
+                        }
+                        else
+                        {
+                            sqlQuery = @"INSERT INTO [dbo].[tbl_products]([ProductCode],[ProductName],[ProductStatus])VALUES 
                             ('" + txtProductCode.Text + "','" + txtProductName.Text + "','" + cmbStatus.SelectedIndex + "')";
+                            MessageBox.Show("Product succefully added.");
+                        }
+
+                        SqlCommand cmd = new SqlCommand(sqlQuery, con);
+                        cmd.ExecuteNonQuery();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+                    finally
+                    {
+                        con.Close();
+
+                    }
+
+                    ResetRecords();
+                } 
             }
-
-            SqlCommand cmd = new SqlCommand(sqlQuery, con);
-            cmd.ExecuteNonQuery();
-
-            con.Close();
-            Clear();
-            LoadData();
-
-
-
         }
 
         private bool IfProductsExists(SqlConnection con, String productCode)
@@ -67,9 +87,7 @@ namespace Stock
 
         private void Products_Load(object sender, EventArgs e)
         {
-            cmbStatus.SelectedIndex = 1;
-            txtProductCode.Focus();
-            LoadData();
+            ResetRecords();
         }
 
         public void LoadData()
@@ -98,44 +116,129 @@ namespace Stock
 
         private void dgvProducts_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            cmbStatus.Text = "";
-           
+            Clear();
+            btnDelete.Show();
+            btnAdd.Text = "Update";
+            cmbStatus.SelectedIndex = 0;
             txtProductCode.Text = dgvProducts.SelectedRows[0].Cells[0].Value.ToString();
+            txtProductCode.ReadOnly = true;
             txtProductName.Text = dgvProducts.SelectedRows[0].Cells[1].Value.ToString();
-            cmbStatus.SelectedText = dgvProducts.SelectedRows[0].Cells[2].Value.ToString();
+            if(dgvProducts.SelectedRows[0].Cells[2].Value.ToString() == "Active")
+            {
+               
+                cmbStatus.SelectedIndex = 1;
+            }
+            else
+            {
+                cmbStatus.SelectedIndex = 0;
+     
+            }
+                
 
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
-            SqlConnection con = new SqlConnection("Data Source=LAPTOP-2B38MO48\\SQLEXPRESS;Initial Catalog=StockManagement;Integrated Security=True");
-            var sqlQuery = "";
-
-            
-
-            if (IfProductsExists(con,txtProductCode.Text))
+            DialogResult dialogResult = MessageBox.Show("Are you sure want to delete?", "Message", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (dialogResult == DialogResult.Yes)
             {
-                con.Open();
-                sqlQuery = @"DELETE FROM[dbo].[tbl_products] WHERE [ProductCode] ='" + txtProductCode.Text + "'";
-                SqlCommand cmd = new SqlCommand(sqlQuery, con);
-                cmd.ExecuteNonQuery();
-                con.Close();
-                Clear();
-            }
-            else
-            {
-                MessageBox.Show("Record not exists.");
-            }
+                if (Validation())
+                {
+                    SqlConnection con = new SqlConnection("Data Source=LAPTOP-2B38MO48\\SQLEXPRESS;Initial Catalog=StockManagement;Integrated Security=True");
+                    var sqlQuery = "";
 
-            
-            LoadData();
+
+                    try
+                    {
+                        if (IfProductsExists(con, txtProductCode.Text))
+                        {
+                            con.Open();
+                            sqlQuery = @"DELETE FROM[dbo].[tbl_products] WHERE [ProductCode] ='" + txtProductCode.Text + "'";
+                            SqlCommand cmd = new SqlCommand(sqlQuery, con);
+                            cmd.ExecuteNonQuery();
+                            errorProvider1.Clear();
+                            MessageBox.Show("Product succefully deleted.","Message",MessageBoxButtons.OK,MessageBoxIcon.Information);
+
+                        }
+                        else
+                        {
+                            MessageBox.Show("Record not exists.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+                    finally
+                    {
+                        con.Close();
+                    }
+
+
+
+                    ResetRecords();
+                } 
+            }
+          
         }
 
         private void Clear()
         {
             txtProductCode.Clear();
             txtProductName.Clear();
+            cmbStatus.SelectedIndex = 0;
             txtProductCode.Focus();
+            errorProvider1.Clear();
+            errorProvider2.Clear();
+        }
+
+        private void ResetRecords()
+        {
+            txtProductCode.ReadOnly = false;
+            Clear();
+            btnAdd.Text = "Add";
+            btnDelete.Hide();
+            LoadData();
+            errorProvider1.Clear();
+        }
+
+        private void btnReset_Click(object sender, EventArgs e)
+        {
+            DialogResult dialogResult = MessageBox.Show("Are you sure want to reset?", "Message", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if(dialogResult == DialogResult.Yes)
+            {
+                ResetRecords();
+            }
+            
+        }
+
+        private bool Validation()
+        {
+            if(string.IsNullOrEmpty(txtProductCode.Text))
+            {
+                errorProvider1.Clear();
+                errorProvider1.SetError(txtProductCode, "Product Code Required");
+            }
+            if (string.IsNullOrEmpty(txtProductName.Text))
+            {
+                errorProvider2.Clear();
+                errorProvider2.SetError(txtProductName, "Product Name Required");
+            }
+
+            bool result = false;
+            if(!string.IsNullOrEmpty(txtProductCode.Text)&& !string.IsNullOrEmpty(txtProductName.Text)&& cmbStatus.SelectedIndex>-1)
+            {
+                result = true;
+            }
+
+            return result;
+
+        }
+
+        private void Products_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            StockMain.productFormOpen = false;
         }
     }
+
 }

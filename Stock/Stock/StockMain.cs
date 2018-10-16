@@ -12,7 +12,8 @@ namespace Stock
 {
     public partial class StockMain : Form
     {
-      
+
+        static public bool productFormOpen = false;
         public StockMain()
         {
             InitializeComponent();
@@ -27,9 +28,25 @@ namespace Stock
 
         private void productToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Products pro = new Products();
-            pro.MdiParent = this; 
-            pro.Show();
+            if(!productFormOpen)
+            {
+                Products pro = new Products();
+                pro.MdiParent = this;
+                pro.StartPosition = FormStartPosition.CenterScreen;
+                pro.Show();
+                productFormOpen = true;
+            }
+            
+        }
+
+        
+        private void stockToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Stock stk = new Stock();
+            stk.MdiParent = this;
+            stk.StartPosition = FormStartPosition.CenterScreen;
+            stk.Show();
+
         }
     }
 }
