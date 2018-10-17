@@ -188,14 +188,14 @@ namespace Stock
                         if (ifProductExists(con, txtProductCode.Text))
                         {
 
-                            sqlQuery = @"UPDATE [dbo].[tbl_stock] SET [ProductName] = '" + txtProductName.Text + "',[ProductStatus] = '" + cmbStatus.SelectedIndex + "', [Quantity] = '" + txtQuantity.Text + "', [TransDate] = '" + dtpDate.Value.ToString("MM/dd/yyyy  hh:mm") + "' WHERE [ProductCode] = '" + txtProductCode.Text + "'";
+                            sqlQuery = @"UPDATE [dbo].[tbl_stock] SET [ProductName] = '" + txtProductName.Text + "',[ProductStatus] = '" + cmbStatus.SelectedIndex + "', [Quantity] = '" + txtQuantity.Text + "', [TransDate] = '" + dtpDate.Value.ToString("MM/dd/yyyy") + "' WHERE [ProductCode] = '" + txtProductCode.Text + "'";
 
                             MessageBox.Show("Product stock succefully updated.");
                         }
                         else
                         {
                             sqlQuery = @"INSERT INTO [dbo].[tbl_stock]([ProductCode],[ProductName],[TransDate],[Quantity],[ProductStatus])VALUES 
-                            ('" + txtProductCode.Text + "','" + txtProductName.Text + "','" + dtpDate.Value.ToString("MM/dd/yyyy  hh:mm") + "' ,'" + txtQuantity.Text+ "','" + cmbStatus.SelectedIndex + "')";
+                            ('" + txtProductCode.Text + "','" + txtProductName.Text + "','" + dtpDate.Value.ToString("MM/dd/yyyy") + "' ,'" + txtQuantity.Text+ "','" + cmbStatus.SelectedIndex + "')";
                             MessageBox.Show("New product stock succefully added.");
                         }
 
